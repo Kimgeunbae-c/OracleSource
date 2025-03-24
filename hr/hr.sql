@@ -211,3 +211,83 @@ FROM EMPLOYEES e
 GROUP BY e.JOB_ID
 ORDER BY e.JOB_ID
 
+ -- 직업 ID가 SA_MAN인 사원들의 최대 연봉보다 높게 받는 사원들의
+ -- LAST_NAME, JOB_ID, SALARY 조회
+ SELECT E.LAST_NAME , E.JOB_ID, E.SALARY
+ FROM EMPLOYEES e 
+ WHERE E.SALARY  > (SELECT MAX(E.SALARY)
+ FROM EMPLOYEES e 
+ WHERE E.JOB_ID  = 'SA_MAN')
+ 
+ -- 커미션을 받는 사원들의 부서와 연봉이 동일한 사원들의 LAST_NAME, DEPERTMENT_ID, SALARY 조회
+SELECT *
+FROM EMPLOYEES e 
+WHERE e.SALARY, e.e.DEPARTMENT_ID = (SELECT e.SALARY, e.DEPARTMENT_ID  FROM EMPLOYEES e WHERE e.COMMISSION_PCT)
+ 
+
+ -- 회사 전체 평균 연봉보다 더 버는 사람들 중 LAST_NAME에 U가 있는
+ -- 사원들이 근무하는 부서와 같은 부서에 근무하는 사원들의 
+ -- 사번, LAST_NAME, SALARY 조회
+			
+ SELECT
+	E.DEPARTMENT_ID,
+	E.LAST_NAME,
+	E .SALARY
+FROM
+	EMPLOYEES E
+WHERE
+	e.SALARY > (
+	SELECT
+			AVG(E.SALARY)
+	FROM
+			EMPLOYEES e)
+	AND e.DEPARTMENT_ID = (
+	SELECT
+		E.DEPARTMENT_ID
+	FROM
+		EMPLOYEES e
+	WHERE
+		E.LAST_NAME LIKE '%U%')
+ 
+ -- 각 부서별 평균 연봉보다 더 받는 동일부서 사원들의 LAST_NAME, SALARY
+  -- DEPTNO, 해당 부서의 평균연봉 조회(부서별 평균연봉을 기준으로 오름차순)
+
+ SELECT e.LAST_NAME, e.SALARY, e.DEPARTMENT_ID, avg(e.SALARY)
+ FROM EMPLOYEES e 
+ WHERE e.salary > (SELECT avg(e.SALARY)
+ FROM EMPLOYEES e)
+ GROUP BY e.SALARY 
+ 
+ -- LAST_NAME 이 'Davies' 인 사람보다 나중에 고용된 사원들의 LAST_NAME, HIRE_DATE 조회
+ 
+ SELECT E.LAST_NAME, E.HIRE_DATE
+ FROM EMPLOYEES E 
+ WHERE E.HIRE_DATE > (SELECT E.HIRE_DATE
+ FROM EMPLOYEES e
+ WHERE E.LAST_NAME = 'Davies')
+ 
+ -- LAST_NAME 이 'KING'인 사원을 매니저로 두고 있는 모든 사원들의 LAST_NAME, SALARY 조회
+ SELECT e.LAST_NAME, e.SALARY
+ FROM EMPLOYEES e 
+ WHERE e.MANAGER_ID in(SELECT e.MANAGER_ID 
+ FROM EMPLOYEES e 
+ WHERE e.LAST_NAME = 'King')
+ 
+ -- LAST_NAME 아 'hall'인 사원과 동일한 연봉 및 커미션을 받는 사원들의 LAST_NAME, 부서번호, 연봉 조회
+ -- 단, hall은 제외
+ SELECT e.LAST_NAME, e.EMPLOYEE_ID, e.SALARY*12
+ FROM EMPLOYEES e 
+ WHERE e.salary = (SELECT e.SALARY
+ FROM employees e
+ where e.LAST_NAME = 'hall') AND e.COMMISSION_PCT = (SELECT e.COMMISSION_PCT
+ FROM employees e
+ where e.LAST_NAME = 'hall')
+ 
+ -- LAST_NAME이 'ZLOTKEY'인 사원과 동일한 부서에서 근무하는 모든 사원들의 사번, 고용날짜 조회
+ -- 단, 'ZLOTKEY' 제외
+ 
+-- 부서가 위치한 지역의 국가 ID 및 국가명을 조회한다
+-- LOCATION , DEPARTMENTS, CONTRIES 테이블 사용
+ 
+ -- 위치 ID가 1700인 사원들의 연봉과 커미션을 추출한 뒤, 추출된 사원들의 연봉과 커미션이 동일한 사원정보 출력
+ -- 출력 : 사번,이름(FIRST_NAME + LAST_NAME), 부서번호, 급여
