@@ -15,7 +15,7 @@
 -- SALGRADE(급여테이블)
 -- GRADE(급여등급), LOSAL(최저급여), HISAL(최대급여)
 
--- 개발자 : CR(Read)UD
+-- 개발자 : C(Insert)R(Read)UD(Delete)
 -- SQL : (Structured Query Language : 구조질의 언어) : RDBMS 데이터를 다루는 언어
 
 -- 1. 조회(SELECT) - Read
@@ -1122,3 +1122,182 @@ SELECT * FROM emp e WHERE e.SAL < ALL (SELECT e.sal FROM emp e WHERE e.DEPTNO = 
  FROM EMP E
  WHERE E.SAL > all(SELECT E.SAL FROM EMP E WHERE E.JOB = 'SALESMAN') order BY e.EMPNO 
  
+ 
+-- C(Insert) : 삽입
+ 
+ -- INSERT INTO 테이블명(필드명, 필드명,.....)
+ -- values(값1, 값2.....)
+ 
+ -- 필드명 생략은 테이블의 현재 열 순서대로 나열되었다고 가정하고 데이터 처리
+ 
+ -- 기존테이블 복사 후 새 테이블로 생성
+ create TABLE dept_temp AS SELECT * FROM dept 
+ 
+ INSERT INTO DEPT_TEMP(DEPTNO,DNAME,LOC)
+ values(50, 'DATABASE', 'SEOUL')
+ 
+ INSERT INTO DEPT_TEMP
+ values(60, 'NETWORK', 'BUSAN')
+ 
+ INSERT INTO DEPT_TEMP
+ values('70', 'NETWORK', 'BUSAN')
+ 
+ -- 값의 수가 충분하지 않습니다
+ INSERT INTO DEPT_TEMP(DEPTNO,DNAME,LOC)
+ values('NETWORK', 'BUSAN')
+ 
+ -- 수치가 부적합합니다
+  INSERT INTO DEPT_TEMP(DEPTNO,DNAME,LOC)
+ values('NETWORK', 'BUSAN''NETWORK', 'BUSAN')
+ 
+ -- 이 열에 대해 지정된 전체 자릿수보다 큰 값이 허용됩니다.
+ -- Number(2,0)
+ INSERT INTO DEPT_TEMP
+ values(600, 'NETWORK', 'BUSAN')
+ 
+ 
+ -- null을 넣는 방법
+ INSERT INTO DEPT_TEMP
+ values(80, 'NETWORK', null)
+ 
+ INSERT INTO DEPT_TEMP(deptno, dname)
+ values(90, 'NETWORK')
+ 
+ 
+-- 열 구조만 복사 후 새 테이블 생성
+create TABLE emp_temp AS SELECT * FROM EMP WHERE 1<>1
+
+-- 날짜데이터 삽입 :  'YYYY-MM-DD' or 'YYYY/MM/DD'
+INSERT INTO emp_temp(EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno)
+values(9999,'홍길동', 'PRESIDENT', NULL, '2020-12-13', 5000,1000,10)
+
+
+INSERT INTO emp_temp(EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno)
+values(3111,'성춘향', 'MANAGER', 9999, sysdate, 4000,Null,30)
+
+
+-- emp, salgrade 급여 등급이 1인 사원들만 emp_temp 추가하기
+
+INSERT INTO emp_temp(EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno)
+SELECT e.*
+FROM emp e JOIN SALGRADE s ON e.sal BETWEEN s.losal AND s.hisal AND s.grade = 1
+
+
+-- U(UPDATE) 
+-- update 테이블명
+-- set 변경할열=값, 변경할열=값...
+-- where 데이터를 변경할 대상 행을 선별하는 조건 나열
+
+-- 90번 부서의 loc SEOUL 변경
+UPDATE DEPT_TEMP dt 
+SET LOC = 'SEOUL'
+WHERE deptno = 90
+
+-- Where가 없으면 loc가 전부 SEOUL로 바뀐다
+UPDATE DEPT_TEMP dt 
+SET LOC = 'SEOUL'
+
+
+-- COMMIT
+-- ROLLBACK
+
+
+-- 40번 부서의 부서명,위치 변경
+-- dept 테이블 40번부서랑 동일
+UPDATE DEPT_TEMP
+SET (dname, LOC) = (SELECT dname, loc from dept where deptno = 40)
+WHERE DEPTNO = 40
+
+-- 50번 부서의 dname, loc 변경
+UPDATE DEPT_TEMP
+SET LOC = 'BOSTON', DNAME='SALES'
+WHERE DEPTNO = 50
+
+
+-- DELETE : 삭제
+-- DELETE FROM 테이블명
+-- WHERE 삭제할 조건
+
+-- DELETE 테이블명
+-- WHERE 삭제할 조건
+
+-- 70번 부서 삭제
+DELETE FROM dept_temp WHERE deptno = 70
+DELETE dept_temp WHERE loc = 'SEOUL'
+
+DELETE FROM emp_temp WHERE sal >= 3000
+
+DELETE Emp_temp
+
+
+
+CREATE TABLE EXAM_TMP * FROM TM
+
+CREATE TABLE EXAM_DEPT * FROM DEPT
+
+CREATE TABLE EXAM_SALGRADE * FROM SALGRADE
+
+create TABLE EXAM_EMP AS SELECT * FROM EMP WHERE 1<>1
+
+-- DEPT 테이블에 다음 데이터를 삽입하기
+-- 50, ORACLE, BUSAN
+-- 60, SQL, ILSAN
+-- 70 SELECT, INCHEON
+-- 80, DML, BUNDANG
+
+create TABLE EXAM_DEPT AS SELECT * FROM dept 
+
+INSERT INTO EXAM_DEPT (DEPTNO,DNAME,LOC) VALUES(50,'ORACLE','BUSAN')
+
+INSERT INTO EXAM_DEPT (DEPTNO,DNAME,LOC) VALUES(60,'SQL','ILSAN')
+
+INSERT INTO EXAM_DEPT (DEPTNO,DNAME,LOC) VALUES(70,'SEKECT','INCHEON')
+
+INSERT INTO EXAM_DEPT (DEPTNO,DNAME,LOC) VALUES(80,'DML','BUNDANG')
+
+DELETE FROM EXAM_DEPT  WHERE DEPTNO  <= 40
+
+-- EXAM_EMP 테이블에 다음 데이터 삽입하기
+-- 7201, USER1, MANAGER, 7788, 2016-02-01, 4500, NULL, 50
+-- 7202, USER2, CLERK, 7201, 2016-02-16, 1800, NULL, 50
+-- 7203, USER3, ANALYST, 7201, 2016-04-11, 3400, NULL, 60
+-- 7204, USER4, SALESMAN, 7201, 2016-05-31, 2700, NULL, 60
+-- 7205, USER5, CLERK, 7201, 2016-07-20, 2600, NULL, 70
+-- 7206, USER6, MANAGER, 7201, 2016-09-08, 2600, NULL, 70
+-- 7207, USER7, LECTURER, 7201, 2016-10-28, 2300, NULL, 80
+-- 7208, USER8, STUDENT, 7201, 2018-03-09, 1200, NULL, 80
+INSERT INTO EXAM_EMP (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7201, 'USER1', 'MANAGER', 7788, '2016-02-01', 4500, NULL, 50)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7202, 'USER2', 'CLERK', 7201, '2016-02-16', 1800, NULL, 50)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7203, 'USER3', 'ANALYST', 7201, '2016-04-11', 3400, NULL, 60)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7204, 'USER4', 'SALESMAN', 7201, '2016-05-31', 2700, NULL, 60)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7205, 'USER5', 'CLERK', 7201, '2016-07-20', 2600, NULL, 70)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7206, 'USER6', 'MANAGER', 7201, '2016-09-08', 2600, NULL, 70)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7207, 'USER7', 'LECTURER', 7201, '2016-10-28', 2300, NULL, 80)
+
+INSERT INTO EXAM_EMP  (EMPNO, ename, JOb, mgr, hiredate, sal, comm, deptno) VALUES (7208, 'USER8', 'STUDENT', 7201, '2018-03-09', 1200, NULL, 80)
+
+
+-- EXAM_EMP 에서 50번 부서에서 근무하는 사원의 평균 급여보다 많이 받는 사원을
+-- 70 번 부서로 옮기는 SQL 구문 작성
+
+UPDATE EXAM_EMP
+SET DEPTNO = 70
+WHERE sal  > (SELECT AVG(SAL) FROM EXAM_EMP WHERE DEPTNO = 50)
+
+
+-- EXAM_EMP 에서 입사일에서 가장 빠른 60번 부서 사원보다 늦게 입사한 사원의
+-- 급여를 10% 이상하고 80번 부서로 옮기는 sql 구문 작성
+UPDATE EXAM_EMP ee 
+SET DEPTNO = 80, SAL = SAL * 1.1
+WHERE HIREDATE < (SELECT MIN(HIREDATE) FROM EXAM_EMP WHERE EMPNO = 60)
+
+
+-- EXAM_EMP 에서 급여등급이 5인 사원을 삭제하는 sql 구문 작성
+
+DELETE FROM EXAM_EMP WHERE COMM < 5
