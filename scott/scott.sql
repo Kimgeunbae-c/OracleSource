@@ -1301,3 +1301,246 @@ WHERE HIREDATE < (SELECT MIN(HIREDATE) FROM EXAM_EMP WHERE EMPNO = 60)
 -- EXAM_EMP 에서 급여등급이 5인 사원을 삭제하는 sql 구문 작성
 
 DELETE FROM EXAM_EMP WHERE COMM < 5
+
+
+create TABLE member (
+	id VARCHAR2(50) NOT NULL PRIMARY KEY,             
+    name VARCHAR2(50) NOT NULL,          
+    addr VARCHAR2(50) NOT NULL, 
+    email VARCHAR2(50) NOT NULL, 
+    age number
+)
+
+-- 오라클 객체
+-- 1. 오라클 데이터베이스 테이블
+--	 1) 사용자 테이블
+-- 	 2) 데이터 사전 - 중요한 데이터(사용자, 권한, 메모리, 성능...) : 일반 사용자가 접근하는 곳은 아님
+--     user_*, all_*, dba_, v$_*
+-- 2. 인덱스 : 검색을 빠르게 처리
+--    1) FULL SCAN
+--    2) INDEX SCAN
+-- 3. view : 가상 테이블
+--     물리적으로 저장된 테이블은 아님
+-- 4.SEQUENCE
+
+
+-- insert(remark X)
+INSERT INTO member(id,name,addr,email,age)
+VALUES('hong123', '홍길동', '서울시 종로구', 'hong123@naver.com', 24)
+
+
+-- 시퀀스 : 오라클 데이터베이스에서 특정 규칙에 따른 연속 숫자를 생성하는 객체
+-- 게시판 번호, 멤버 번호
+
+-- CREATE SEQUENCE 시퀀스명 : 나머지는 기본값으로 나온다
+CREATE SEQUENCE board_seq
+
+-- CREATE SEQUENCE SCOTT.BOARD_SEQ 
+-- INCREMENT BY 1 (시퀀스에서 생성할 번호의 증가값 : 기본값 1)
+-- MINVALUE 1 (시퀀스에서 생성할 번호의 최솟값 : 기본값 NOMINVALUE(1 - 오름차순) 
+-- MAXVALUE 9999999999999999999999999999 (시퀀스에서 생성할 번호의 최대값)
+-- NOCYCLE (1 ~ MAXVALUE 번호가 다 발행된 후에 새로운 번호 요청 시 에러 발생시킴) | CYCLE (1 ~ MAXVALUE 번호가 다 발행된 후에 다시 1부터)
+-- CACHE 20 (시퀀스가 생성할 번호를 메모리에 미리 할당해 놓을 개수를 지정) " NOCACHE (시퀀스를 메모리에 미리 할당하지 않는다) 
+-- NOORDER 
+
+-- Member 테이블에 no 컬럼(number) 추가
+ALTER TABLE MEMBER ADD NO NUMBER(20)
+
+
+-- Member no 같은 시퀀스 값으로 입력하기
+-- 사용할 시퀀스 생성
+create SEQUENCE Member_seq
+
+--
+INSERT INTO member(NO, id,name,addr,email,age)
+VALUES(member_seq.nextval, 'hong123', '홍길동', '서울시 종로구', 'hong123@naver.com', 24)
+
+-- 가장 마지막으로 생성된 시퀀스 확인
+-- 시퀀스.next_seq.currval
+SELECT MEMBER_seq.currval
+FROM dual
+
+-- 시퀀스 임의 생성
+CREATE SEQUENCE seq_dept_sequence
+INCREMENT BY 10
+START WITH 10
+MAXVALUE 90
+MINVALUE 0
+nocycle cache 2
+
+create table dept_sequence AS SELECT * FROM dept WHERE 1<>1
+
+INSERT INTO  dept_sequence VALUES (seq_dept_sequence.nextval, 'DATABASE', 'SEOUL')
+SELECT * FROM DEPT_SEQUENCE
+
+-- 마지막 발생 시퀀스 확인
+SELECT SEQ_DEPT_SEQUENCE.CURRVAL
+FROM DUAL
+
+-- 시퀀스 수정
+ALTER SEQUENCE SEQ_DEPT_SEQUENCE
+INCREMENT BY 3
+MAXVALUE 99
+CYCLE
+
+-- 시퀀스 제거
+DROP SEQUENCE BOARD_SEQ
+
+DROP SEQUENCE SEQ_DEPT_SEQUENCE
+
+
+-- 제약조건(*) : 테이블에 저장할 데이터를 제약하는 특수한 규칙// 매우 중요함
+-- 1) NOT NULL : 빈 값을 허용하지 않음
+-- 2) UNIQUE : 중복불가
+-- 3) PRIMARY KEY(PK) : 유일하게 하나만 존재
+-- 4) FOREIGN KEY(FK) : 다른 테이블과 관계 맺기
+-- 5) CHECK : 데이터 형태와 범위를 지정
+-- 6) DEFAULT : 기본값 설정
+
+CREATE TABLE tbl_notnull(
+	login_id varchar2(20) NOT NULL,
+	login_pwd varchar2(20) NOT NULL,
+	tel varchar2(20)
+)
+
+-- SQL Error [1400] [23000]: ORA-01400: NULL을 ("SCOTT"."TBL_NOTNULL"."LOGIN_PWD") 안에 삽입할 수 없습니다
+INSERT INTO TBL_NOTNULL (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('hong1230', null, '010-1234-5678')
+
+
+INSERT INTO TBL_NOTNULL (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('hong1230',' ', '010-1234-5678')
+
+
+INSERT INTO TBL_NOTNULL (LOGIN_ID, LOGIN_PWD)
+VALUES('hong1230', 'HONG123')
+
+
+
+-- 계약조건 이름 직접 지정
+CREATE TABLE tbl_notnull2(
+	login_id varchar2(20) CONSTRAINT tblnn2_logID_nn NOT NULL,
+	login_pwd varchar2(20) CONSTRAINT TBLNN2_LOGPWD_NN NOT NULL,
+	tel varchar2(20)
+)
+
+
+
+-- TBL_NOTNULL TEL 칼럼을 NOT NULL로 변경
+-- 이미 생성된 테이블에 제약조건 지정은 가능하나 이미 삽입된 데이터가 계약조건을 만족해야 한다
+-- SQL Error [2296] [23000]: ORA-02296: (SCOTT.) 사용으로 설정 불가 - 널 값이 발견되었습니다.
+ALTER TABLE TBL_NOTNULL MODIFY (TEL NOT NULL)
+
+UPDATE TBL_NOTNULL tn 
+SET TEL='010-1234-5678'
+WHERE LOGIN_ID = 'hong123'
+
+
+ALTER TABLE TBL_NOTNULL2 MODIFY (TEL CONSTRAINT tblnn2_tel_nn NOT NULL)
+
+-- 계약조건 이름 변경
+ALTER TABLE TBL_NOTNULL2 RENAME CONSTRAINT tblnn2_tel_nn TO TBL_NN2_TEL_NN
+
+-- 계약조건 삭제
+ALTER TABLE TBL_NOTNULL2 DROP CONSTRAINT TBL_NN2_TEL_NN
+
+-- UNIQUE : 데이터의 중복을 허용하지 않음
+-- 			NULL은 중복 대상에서 제외됨
+
+CREATE TABLE TBL_UNIQUE(
+	login_id varchar2(20) UNIQUE,
+	login_pwd varchar2(20) NOT NULL,
+	tel varchar2(20)
+)
+
+
+-- SQL Error [1] [23000]: ORA-00001: 무결성 제약 조건(SCOTT.SYS_C008366)에 위배됩니다
+-- 데이터 무결성
+-- 데이터베이스에 저장되는 데이터의 정확성과 일치성 보장
+-- DML 과정에서 지켜야 하는 규익
+INSERT INTO TBL_UNIQUE (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('hong123', 'PW123', '010-1234-5678')
+
+INSERT INTO TBL_UNIQUE (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES(NULL, 'PW123', '010-1234-5678')
+
+
+ALTER TABLE TBL_UNIQUE MODIFY (TEL UNIQUE)
+
+UPDATE TBL_UNIQUE tu 
+SET TEL = NULL
+
+-- 유일하게 하나만 있는 값 : PRIMARY KEY(PK)
+-- PK : NOT NULL + UNIQUE
+--		컬럼 하나만 지정 가능
+
+CREATE TABLE TBL_PK(
+	login_id varchar2(20) PRIMARY KEY,
+	login_pwd varchar2(20) NOT NULL,
+	tel varchar2(20)
+)
+
+CREATE TABLE TBL_PK2(
+	login_id varchar2(20) CONSTRAINT TBLPK2_LGN_PK PRIMARY KEY,
+	login_pwd varchar2(20) NOT NULL,
+	tel varchar2(20)
+)
+
+INSERT INTO TBL_PK (LOGIN_ID, LOGIN_PWD, TEL)
+VALUES('hong123', 'PW123', '010-1234-5678')
+
+-- 다른 테이블과 관계를 맺는 키 : 외래키(FK)
+-- join 구문 EMP(deptno), DEPT(deptno)
+-- emp 테이블에 deptno 는 dept 테이블의 deptno 값을 참조해서 삽입 
+
+-- 부서 테이블 생성 (참조 대상이 되는 테이블 먼저 작성)
+CREATE TABLE DEPT_FK(
+	DEPTNO NUMBER(2) CONSTRAINT DEPTFK_DEPTNO_PK PRIMARY KEY,
+	DNAME VARCHAR(14),
+	LOC VARCHAR(13)
+)
+
+CREATE TABLE EMP_FK(
+	EMPNO NUMBER(4) CONSTRAINT EMPFK_EMPNO_PK PRIMARY KEY,
+	ENAME VARCHAR2(10) NOT NULL,
+	JOB VARCHAR(9) NOT NULL,
+	MGR NUMBER(4),
+	HIREDATE DATE,
+	SAL NUMBER(7,2) NOT NULL,
+	COMM NUMBER(7,2),
+	DEPTNO NUMBER(2) CONSTRAINT EMPFK_DEPTNO_KF REFERENCES DEPTNO_FK(DEPT)
+)
+
+SQL Error [2291] [23000]: ORA-02291: 무결성 제약조건(SCOTT.EMPFK_DEPT_KF)이 위배되었습니다- 부모 키가 없습니다
+INSERT INTO EMP_FK(EMPNO,ENAME,JOB,HIREDATE,SAL,DEPT)
+VALUES (9999,'TEST1','PARTNER',SYSDATE,2500,10)
+
+-- INSERT 시 주의점
+-- 참조 대상이 되는 테이블(부모)의 데이터 삽입
+-- 참조 하는 테이블(자식)의 데이터 삽입
+INSERT INTO DEPT VALUES(10,'DATABASE', 'SEOUL');
+INSERT INTO EMP_FK(EMPNO, ENAME, HIREDATE, SAL, DEPT)
+VALUES(9999,'TEST1', 'PARTNER', SYSDATE, 2500, 10);
+
+-- DELEDT 시 주의점
+-- 1) 참조하는 테이블(자식)의 데이터 삭제
+-- 2) 참조 대상이 되는 테이블(부모)의 삭제
+
+-- 옵션설정
+-- 1) ON DELETE CASCADE : 부모 삭제 시 자식도 같이 삭제
+-- 2) ON DELETE SET NULL : 부모 삭제 시 연결된 자식의 부모를 NULL로 변경
+DELETE FROM DEPT_KF WHERE DEPTNO = 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
