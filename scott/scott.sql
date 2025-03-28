@@ -1519,8 +1519,10 @@ VALUES (9999,'TEST1','PARTNER',SYSDATE,2500,10)
 -- 참조 대상이 되는 테이블(부모)의 데이터 삽입
 -- 참조 하는 테이블(자식)의 데이터 삽입
 INSERT INTO DEPT VALUES(10,'DATABASE', 'SEOUL');
-INSERT INTO EMP_FK(EMPNO, ENAME, HIREDATE, SAL, DEPT)
-VALUES(9999,'TEST1', 'PARTNER', SYSDATE, 2500, 10);
+INSERT
+	INTO
+	EMP_FK(EMPNO, ENAME, HIREDATE, SAL, DEPT)
+VALUES(9999, 'TEST1', 'PARTNER', SYSDATE, 2500, 10);
 
 -- DELEDT 시 주의점
 -- 1) 참조하는 테이블(자식)의 데이터 삭제
@@ -1531,10 +1533,57 @@ VALUES(9999,'TEST1', 'PARTNER', SYSDATE, 2500, 10);
 -- 2) ON DELETE SET NULL : 부모 삭제 시 연결된 자식의 부모를 NULL로 변경
 DELETE FROM DEPT_KF WHERE DEPTNO = 10
 
+DROP TABLE Member
 
 
+-- MEMBER 테이블 생성하기
+-- NUMBER(8) UNIQUE ,id varchar2(8) pj, /name 10 not null / addr 50 / email 30 not null / age number(4)
+
+CREATE TABLE MEMBER (
+	NO NUMBER(8) UNIQUE,
+	ID varchar2(8) PRIMARY KEY,
+	NAME VARCHAR2(10) NOT NULL,
+	ADDR VARCHAR2(50),
+	Email VARCHAR2(30) NOT NULL,
+	AGE NUMBER(4)
+)
+
+INSERT INTO member(NO, id, name, addr,email, age)
+VALUES (MEMBER_seq.nextval, 'hong468', '박길동', '서울시 종로구', 'hong123@naver.com', 24)
+
+-- check : 데이터의 형태와 범위를 지정
+CREATE TABLE TBL_check(
+	login_id varchar2(20) PRIMARY KEY,
+	login_pwd varchar2(20) CHECK (LENGTH(login_pwd) > 3),
+	tel varchar2(20)
+);
 
 
+--SQL Error [2290] [23000]: ORA-02290: 체크 제약조건(SCOTT.SYS_C008390)이 위배되었습니다
+INSERT INTO TBL_CHECK
+values('TEST_ID', '1024', '010-1234-5678');
+
+-- DEFAULT : 기본값
+ CREATE TABLE TBL_DEFAULT(
+	login_id varchar2(20) PRIMARY KEY,
+	login_pwd varchar2(20) DEFAULT '1234',
+	tel varchar2(20)
+);
+
+INSERT INTO TBL_DEFAULT (LOGIN_ID, TEL)
+VALUES ('TEST_ID2','010-1234-5678' )
+
+CREATE TABLE BOARD(
+	ID NUMBER(8) PRIMARY KEY,
+	NAME VARCHAR(20) NOT NULL,
+	REGDATE DATE DEFAULT SYSDATE
+)
+
+INSERT INTO BOARD(ID,NAME) 
+VALUES(1, '홍길동')
+
+
+-- 사용자 
 
 
 
