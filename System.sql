@@ -53,7 +53,7 @@ QUOTA 10M ON USERS
 -- GRANT SELECT, INSERT, DELETE ON  BOARD TO C##test1 // 하나씩 주기에는 너무 오래걸린다
 -- 롤 : 여러 개의 권한이 묶여서 정의되어 있음
 
-GRANT CONNECT, RESOURCE TO C##TEST1;
+GRANT CONNECT, RESOURCE TO C##java;
 
 
 --SQL Error [65096] [99999]: ORA-65096: 공통 사용자 또는 롤 이름이 부적합합니다. // C##이 붙지 않았다
@@ -70,4 +70,17 @@ ALTER USER C##TEST1 IDENTIFIED BY 54321;
 
 -- 사용자 제거
 -- SQL Error [1940] [42000]: ORA-01940: 현재 접속되어 있는 사용자는 삭제할 수 없습니다
+-- SQL Error [28014] [99999]: ORA-28014: 관리 사용자 또는 롤을 삭제할 수 없습니다.
 DROP USER C##TEST1;
+
+-- 'C##TEST1'(을)를 삭제하려면 CASCADE를 지정하여야 합니다.
+-- 사용자 스키마에 객체가 존재한다면 CASCADE 옵션 사용해서 제거
+DROP USER C##TEST1 CASCADE;
+
+
+
+-- 사용할 유저 생성
+CREATE USER C##java IDENTIFIED BY 12345
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+QUOTA 10M ON USERS
